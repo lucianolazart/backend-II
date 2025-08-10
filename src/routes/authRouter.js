@@ -31,6 +31,13 @@ router.post('/register', async (req, res) => {
 
         const token = generateToken(newUser);
 
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 horas
+        });
+
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
             user: {
@@ -40,8 +47,7 @@ router.post('/register', async (req, res) => {
                 email: newUser.email,
                 age: newUser.age,
                 role: newUser.role
-            },
-            token
+            }
         });
     } catch (error) {
         console.error('Error en registro:', error);
@@ -60,6 +66,13 @@ router.post('/login', (req, res, next) => {
 
         const token = generateToken(user);
 
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 horas
+        });
+
         res.json({
             message: 'Login exitoso',
             user: {
@@ -69,8 +82,7 @@ router.post('/login', (req, res, next) => {
                 email: user.email,
                 age: user.age,
                 role: user.role
-            },
-            token
+            }
         });
     })(req, res, next);
 });
@@ -93,6 +105,11 @@ router.get('/current', authenticateJWT, (req, res) => {
         console.error('Error al obtener usuario actual:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
+});
+
+router.post('/logout', (req, res) => {
+    res.clearCookie('jwt');
+    res.json({ message: 'Logout exitoso' });
 });
 
 export default router; 

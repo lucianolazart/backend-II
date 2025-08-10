@@ -8,8 +8,16 @@ const userManager = new UserDBManager();
 
 const JWT_SECRET = 'CoderCoder123';
 
+const cookieExtractor = (req) => {
+    let token = null;
+    if (req && req.cookies) {
+        token = req.cookies.jwt;
+    }
+    return token;
+};
+
 passport.use(new JwtStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    jwtFromRequest: cookieExtractor,
     secretOrKey: JWT_SECRET
 }, async (payload, done) => {
     try {
@@ -24,8 +32,7 @@ passport.use(new JwtStrategy({
 }));
 
 passport.use(new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password'
+    usernameField: 'email'
 }, async (email, password, done) => {
     try {
         const user = await userManager.findUserByEmail(email);
@@ -43,18 +50,5 @@ passport.use(new LocalStrategy({
         return done(error);
     }
 }));
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await userManager.findUserById(id);
-        done(null, user);
-    } catch (error) {
-        done(error);
-    }
-});
 
 export { JWT_SECRET }; 

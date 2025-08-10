@@ -3,7 +3,7 @@ import handlebars from 'express-handlebars';
 import {Server} from 'socket.io';
 import mongoose from 'mongoose';
 import passport from 'passport';
-import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 import productRouter from './routes/productRouter.js';
 import cartRouter from './routes/cartRouter.js';
@@ -27,16 +27,9 @@ app.set('view engine', 'handlebars');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
-
-app.use(session({
-    secret: 'CoderCoder123',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
-}));
+app.use(cookieParser());
 
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
