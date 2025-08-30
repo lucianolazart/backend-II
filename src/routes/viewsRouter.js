@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { productDBManager } from '../dao/productDBManager.js';
-import { cartDBManager } from '../dao/cartDBManager.js';
+import productDBManager from '../dao/productDBManager.js';
+import cartDBManager from '../dao/cartDBManager.js';
 
 const router = Router();
 const ProductService = new productDBManager();
@@ -60,6 +60,27 @@ router.get('/cart/:cid', async (req, res) => {
             products: JSON.parse(JSON.stringify(response.products))
         }
     )
+});
+
+router.get('/reset-password', (req, res) => {
+    res.render('resetPassword', {
+        title: 'Restablecer Contraseña',
+        style: 'index.css'
+    });
+});
+
+router.get('/login', (req, res) => {
+    res.render('login', {
+        title: 'Login',
+        style: 'index.css'
+    });
+});
+
+router.get('/forgot-password', (req, res) => {
+    res.render('forgotPassword', {
+        title: 'Recuperar Contraseña',
+        style: 'index.css'
+    });
 });
 
 export default router;

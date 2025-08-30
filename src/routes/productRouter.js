@@ -1,13 +1,15 @@
 import { Router } from 'express';
-import { productDBManager } from '../dao/productDBManager.js';
+import ProductRepository from '../repositories/productRepository.js';
 import { uploader } from '../utils/multerUtil.js';
+import { authenticateJWT } from '../middlewares/auth.js';
+import { isAdmin, validateObjectId } from '../middlewares/authorization.js';
 
 const router = Router();
-const ProductService = new productDBManager();
+const productRepository = new ProductRepository();
 
 router.get('/', async (req, res) => {
     try {
-        const result = await ProductService.getAllProducts(req.query);
+        const result = await productRepository.getAllProducts(req.query);
         res.send({
             status: 'success',
             payload: result
@@ -21,15 +23,15 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/:pid', async (req, res) => {
+router.get('/:pid', validateObjectId, async (req, res) => {
     try {
-        const result = await ProductService.getProductByID(req.params.pid);
+        const result = await productRepository.getProductById(req.params.pid);
         res.send({
             status: 'success',
             payload: result
         });
     } catch (error) {
-        console.error('Error al obtener producto:', error);
+        console.error('Error al obtener producto específico:', error);
         res.status(400).send({
             status: 'error',
             message: error.message
@@ -37,7 +39,7 @@ router.get('/:pid', async (req, res) => {
     }
 });
 
-router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
+router.post('/', authenticateJWT, isAdmin, uploader.array('thumbnails', 3), async (req, res) => {
     try {
         if (req.files) {
             req.body.thumbnails = [];
@@ -46,13 +48,13 @@ router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
             });
         }
 
-        const result = await ProductService.createProduct(req.body);
+        const result = await productRepository.createProduct(req.body);
         res.send({
             status: 'success',
             payload: result
         });
     } catch (error) {
-        console.error('Error al crear producto:', error);
+        console.error('Error al crear nuevo producto:', error);
         res.status(400).send({
             status: 'error',
             message: error.message
@@ -60,7 +62,7 @@ router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
     }
 });
 
-router.put('/:pid', uploader.array('thumbnails', 3), async (req, res) => {
+router.put('/:pid', authenticateJWT, isAdmin, validateObjectId, uploader.array('thumbnails', 3), async (req, res) => {
     try {
         if (req.files) {
             req.body.thumbnails = [];
@@ -69,13 +71,13 @@ router.put('/:pid', uploader.array('thumbnails', 3), async (req, res) => {
             });
         }
 
-        const result = await ProductService.updateProduct(req.params.pid, req.body);
+        const result = await productRepository.updateProduct(req.params.pid, req.body);
         res.send({
             status: 'success',
             payload: result
         });
     } catch (error) {
-        console.error('Error al actualizar producto:', error);
+        console.error('Error al actualizar producto existente:', error);
         res.status(400).send({
             status: 'error',
             message: error.message
@@ -83,15 +85,15 @@ router.put('/:pid', uploader.array('thumbnails', 3), async (req, res) => {
     }
 });
 
-router.delete('/:pid', async (req, res) => {
+router.delete('/:pid', authenticateJWT, isAdmin, validateObjectId, async (req, res) => {
     try {
-        const result = await ProductService.deleteProduct(req.params.pid);
+        const result = await productRepository.deleteProduct(req.params.pid);
         res.send({
             status: 'success',
             payload: result
         });
     } catch (error) {
-        console.error('Error al eliminar producto:', error);
+        console.error('Error al eliminar producto del sistema:', error);
         res.status(400).send({
             status: 'error',
             message: error.message

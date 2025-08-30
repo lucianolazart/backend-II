@@ -111,4 +111,4 @@ class cartDBManager {
     }
 }
 
-export { cartDBManager };
+export default cartDBManager;

@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import passport from 'passport';
-import UserDBManager from '../dao/userDBManager.js';
+import UserRepository from '../repositories/userRepository.js';
 import { authenticateJWT, generateToken } from '../middlewares/auth.js';
+import { UserDTO } from '../dto/userDTO.js';
 
 const router = Router();
-const userManager = new UserDBManager();
+const userRepository = new UserRepository();
 
 router.post('/register', async (req, res) => {
     try {
@@ -14,7 +15,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
-        const existingUser = await userManager.findUserByEmail(email);
+        const existingUser = await userRepository.findUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({ error: 'El email ya está registrado' });
         }
@@ -27,7 +28,7 @@ router.post('/register', async (req, res) => {
             password
         };
 
-        const newUser = await userManager.createUser(userData);
+        const newUser = await userRepository.createUser(userData);
 
         const token = generateToken(newUser);
 
@@ -40,14 +41,7 @@ router.post('/register', async (req, res) => {
 
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
-            user: {
-                id: newUser._id,
-                first_name: newUser.first_name,
-                last_name: newUser.last_name,
-                email: newUser.email,
-                age: newUser.age,
-                role: newUser.role
-            }
+            user: newUser
         });
     } catch (error) {
         console.error('Error en registro:', error);
@@ -73,16 +67,10 @@ router.post('/login', (req, res, next) => {
             maxAge: 24 * 60 * 60 * 1000 // 24 horas
         });
 
+        const userDTO = UserDTO.fromUser(user);
         res.json({
             message: 'Login exitoso',
-            user: {
-                id: user._id,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                email: user.email,
-                age: user.age,
-                role: user.role
-            }
+            user: userDTO
         });
     })(req, res, next);
 });
@@ -90,16 +78,9 @@ router.post('/login', (req, res, next) => {
 router.get('/current', authenticateJWT, (req, res) => {
     try {
         const user = req.user;
+        const userDTO = UserDTO.fromUser(user);
         res.json({
-            user: {
-                id: user._id,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                email: user.email,
-                age: user.age,
-                role: user.role,
-                cart: user.cart
-            }
+            user: userDTO
         });
     } catch (error) {
         console.error('Error al obtener usuario actual:', error);

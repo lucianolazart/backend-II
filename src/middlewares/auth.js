@@ -15,22 +15,6 @@ export const authenticateJWT = (req, res, next) => {
     })(req, res, next);
 };
 
-export const isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-        next();
-    } else {
-        res.status(403).json({ error: 'Acceso denegado. Se requieren permisos de administrador.' });
-    }
-};
-
-export const isAuthenticated = (req, res, next) => {
-    if (req.user) {
-        next();
-    } else {
-        res.status(401).json({ error: 'Usuario no autenticado' });
-    }
-};
-
 export const generateToken = (user) => {
     return jwt.sign(
         { id: user._id, email: user.email, role: user.role },

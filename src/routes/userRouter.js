@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import UserDBManager from '../dao/userDBManager.js';
-import { authenticateJWT, isAdmin, isAuthenticated } from '../middlewares/auth.js';
+import { authenticateJWT } from '../middlewares/auth.js';
+import { isAdmin, isAuthenticated, validateObjectId } from '../middlewares/authorization.js';
 
 const router = Router();
 const userManager = new UserDBManager();
@@ -15,7 +16,7 @@ router.get('/', authenticateJWT, isAdmin, async (req, res) => {
     }
 });
 
-router.get('/:id', authenticateJWT, async (req, res) => {
+router.get('/:id', authenticateJWT, validateObjectId, async (req, res) => {
     try {
         const { id } = req.params;
         const user = await userManager.findUserById(id);
@@ -35,7 +36,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
     }
 });
 
-router.put('/:id', authenticateJWT, async (req, res) => {
+router.put('/:id', authenticateJWT, validateObjectId, async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
@@ -64,7 +65,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
     }
 });
 
-router.delete('/:id', authenticateJWT, async (req, res) => {
+router.delete('/:id', authenticateJWT, validateObjectId, async (req, res) => {
     try {
         const { id } = req.params;
 

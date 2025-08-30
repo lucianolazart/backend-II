@@ -6,7 +6,7 @@ import UserDBManager from '../dao/userDBManager.js';
 
 const userManager = new UserDBManager();
 
-const JWT_SECRET = 'CoderCoder123';
+const JWT_SECRET = process.env.JWT_SECRET || 'CoderCoder123';
 
 const cookieExtractor = (req) => {
     let token = null;
